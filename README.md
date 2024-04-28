@@ -1,8 +1,6 @@
 # scalar wave equation
 
-Softwarelab 2024
-
-Modelling the scalar wave equation in the frequency and time domain.
+Modelling the scalar wave equation in the frequency and time domain - Softwarelab 2024
 
 ## Members
 
