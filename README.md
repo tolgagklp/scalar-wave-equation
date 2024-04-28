@@ -2,11 +2,15 @@
 
 ## members
 
-Fateme 
-Faizan
-Laura 
-Julius 
-Tolga
+- Fateme
+- Faizan
+- Laura
+- Julius
+- Tolga
+
+## supervisor 
+
+
 
 ## Getting started
 
