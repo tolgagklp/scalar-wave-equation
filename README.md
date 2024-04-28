@@ -1,6 +1,6 @@
 # scalar wave equation
 
-## members
+## Members
 
 - Fateme
 - Faizan
@@ -8,9 +8,9 @@
 - Julius
 - Tolga
 
-## supervisor 
+## Supervisor 
 
-
+Divya Shyam Singh
 
 ## Getting started
 
