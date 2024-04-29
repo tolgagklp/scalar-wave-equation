@@ -8,7 +8,7 @@ The material is assumed to be isotropic and homogeneous in the whole domain, sta
 
 ## Members
 
-- Fateme Seyfi
+- Fatemeh Seyfi
 - Faizan Saeed
 - Laura Winter
 - Julius Weidinger
