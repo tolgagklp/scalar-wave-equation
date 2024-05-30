@@ -39,9 +39,10 @@ def initial_condition(x):
     sigma = 0.5  # Width of the Gaussian pulse
     return np.exp(-((x - x0) ** 2) / (2 * sigma ** 2))  # Modify this for other initial conditions
 
-# def initial_condition(x):
-#     x0 = Lx / 2  # Üçgen dalgasının merkezi
-#     width = 1.0  # Üçgen dalgasının genişliği
+# Initial condition (Triangle)
+# def initial_condition(x):  
+#     x0 = Lx / 2  # Center of triangle wave
+#     width = 1.0  # Width of triangle wave
 #     return max(0, 1 - abs(x - x0) / (width / 2))
 
 
