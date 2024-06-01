@@ -59,6 +59,14 @@ def apply_boundary_conditions(u):
     u[-1] = 0  # Right boundary
     return u
 
+''' 
+# other option for BC (Neumann)
+def apply_boundary_conditions(u):
+    u[0] = u[1]       # Left boundary
+    u[-1] = u[-2]     # Right boundary
+    return u
+'''
+
 # Prepare the plot
 fig, ax = plt.subplots()
 x = np.linspace(domain[0], domain[1], nx)   
