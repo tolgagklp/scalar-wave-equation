@@ -6,7 +6,7 @@ from matplotlib.animation import FuncAnimation
 domain = [0, 10]
 nx = 100  # number of spatial points in x direction
 ny = 100  # number of spatial points in y direction
-nt = 500  # number of time steps
+nt = 10000  # number of time steps
 
 Lx = domain[1] - domain[0]  # length of the domain in x direction
 Ly = domain[1] - domain[0]  # length of the domain in y direction
@@ -53,8 +53,9 @@ for i in range(nx):
         y = j * dy
         u[i, j] = initial_condition(x, y)
         u_old[i, j] = u[i, j]  # Assuming initial velocity is zero, u_old = u
-
+'''
 # Boundary conditions (Dirichlet)
+
 def apply_boundary_conditions(u):
     u[0, :] = 0  # Left boundary
     u[-1, :] = 0  # Right boundary
@@ -64,18 +65,22 @@ def apply_boundary_conditions(u):
 '''
 # Boundary conditions (Neumann)
 def apply_boundary_conditions(u):
+    u[0,0] = u[1,1] # Left top edge
+    u[0,-1] = u[1,-2] # Right top edge
+    u[-1,0] = u[-2,1] # Left bottom edge
+    u[-1,-1] = u[-2,-2] # Right bottom edge
     u[0, 1:-1] = u[1, 1:-1]       # Left boundary
     u[-1, 1:-1] = u[-2, 1:-1]     # Right boundary
     u[1:-1, 0] = u[1:-1, 1]       # Bottom boundary
     u[1:-1, -1] = u[1:-1, -2]     # Top boundary
     return u
-'''
+
 # Prepare the plot
 fig, ax = plt.subplots()
 x = np.linspace(domain[0], domain[1], nx)
 y = np.linspace(domain[0], domain[1], ny)
 X, Y = np.meshgrid(x, y)
-color_mesh = ax.pcolormesh(X, Y, u.T, shading='auto', cmap='viridis', vmin=-2, vmax=2)
+color_mesh = ax.pcolormesh(X, Y, u.T, shading='auto', cmap='seismic', vmin=-1, vmax=1)
 ax.set_xlim(domain[0], domain[1])
 ax.set_ylim(domain[0], domain[1])
 ax.set_xlabel('x')
