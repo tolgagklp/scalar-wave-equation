@@ -61,7 +61,15 @@ def apply_boundary_conditions(u):
     u[:, 0] = 0  # Bottom boundary
     u[:, -1] = 0  # Top boundary
     return u
-
+'''
+# Boundary conditions (Neumann)
+def apply_boundary_conditions(u):
+    u[0, 1:-1] = u[1, 1:-1]       # Left boundary
+    u[-1, 1:-1] = u[-2, 1:-1]     # Right boundary
+    u[1:-1, 0] = u[1:-1, 1]       # Bottom boundary
+    u[1:-1, -1] = u[1:-1, -2]     # Top boundary
+    return u
+'''
 # Prepare the plot
 fig, ax = plt.subplots()
 x = np.linspace(domain[0], domain[1], nx)
