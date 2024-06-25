@@ -103,5 +103,5 @@ def update(frame):
 
 # Create animation
 ani = FuncAnimation(fig, update, frames=nt, blit=True, interval=20)
-FuncAnimation()
+#FuncAnimation() it gives an error with this line, removing it will give the plot 
 plt.show()
