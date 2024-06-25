@@ -13,17 +13,19 @@ dt = 0.01  # time step size
 
 # Define wave speed and density as functions of position
 def wave_speed(x):
-    if 7<= x <=9 :
-        return 0.1
-    else :
-        return 1  # Constant wave speed through the domain
+    # if 7<= x <=9 :
+    #     return 0.1
+    # else :
+    #     return 1.0  # Constant wave speed through the domain
+    return 4.0
 
 def density(x):
-    if x in range (7,9):
-        return 0
-    else:
-        return 1.0  # Constant density through the domain
+    # if x in range (7,9):
+    #     return 0
+    # else:
+    #     return 1.0  # Constant density through the domain
     #return 1.0 + 0.5 * np.sin(2 * np.pi * x / Lx)  # Example varying density
+    return 1.0
 
 # Source term function
 def source_term(x, t):
@@ -50,20 +52,20 @@ for i in range(nx):
     x = i * dx
     u[i] = initial_condition(x)
     u_old[i] = u[i]  # Assuming initial velocity is zero, u_old = u
-
+'''
 # Boundary conditions (Dirichlet)
 def apply_boundary_conditions(u):
     u[0] = 0  # Left boundary
     u[-1] = 0  # Right boundary
     return u
+'''
 
-''' 
 # other option for BC (Neumann)
 def apply_boundary_conditions(u):
     u[0] = u[1]       # Left boundary
     u[-1] = u[-2]     # Right boundary
     return u
-'''
+
 
 # Prepare the plot
 fig, ax = plt.subplots()
@@ -82,14 +84,26 @@ ax.set_title('Wave propagation')
 def update(frame):
     global u, u_old, u_new
     t = frame * dt
+    c = wave_speed(0)  # Assuming constant wave speed
+
     for i in range(1, nx - 1):
-        c = wave_speed(i * dx)
-        p = density(i * dx)
-        p_plus = density((i + 1) * dx)
-        p_minus = density((i - 1) * dx)
-        u_new[i] = (2 * u[i] - u_old[i] +
-                    (c * dt / dx)**2 * ((u[i + 1] - u[i]) / p_plus - (u[i] - u[i - 1]) / p_minus) +
-                    dt**2 * source_term(i * dx, t))  # Include source term
+        
+        rho_i = density(domain[0] + i * dx)
+        rho_plus = (density(domain[0] + (i + 1) * dx) + rho_i) / 2
+        rho_minus = (density(domain[0] + (i - 1) * dx) + rho_i) / 2
+        
+        u_new[i] = ((dt*c/dx)**2 / rho_i * (rho_plus * (u[i+1] - u[i]) - rho_minus * (u[i] - u[i-1]))  +
+                    2 * u[i] - u_old[i] + dt**2 * source_term(i * dx, t) / rho_i)
+        
+        '''
+        rho_i = density(i * dx)
+        rho_plus = density((i + 1) * dx)
+        rho_minus = density((i - 1) * dx)
+        
+        u_new[i] = ((dt*c/dx)**2 / (4*rho_i) * (rho_plus * (u[i+2] - u[i]) - rho_minus * (u[i] - u[i-2]))  +
+                    2 * u[i] - u_old[i] + dt**2 * source_term(i * dx, t) / rho_i)
+        '''
+                                    
 
     # Apply boundary conditions
     u_new = apply_boundary_conditions(u_new)
