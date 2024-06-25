@@ -13,10 +13,6 @@ dt = 0.01  # time step size
 
 # Define wave speed and density as functions of position
 def wave_speed(x):
-    # if 7<= x <=9 :
-    #     return 0.1
-    # else :
-    #     return 1.0  # Constant wave speed through the domain
     return 4.0
 
 def density(x):
