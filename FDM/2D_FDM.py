@@ -79,7 +79,7 @@ def animate(frame):
             y_term1 = y_rho_half_plus * (u[i, j + 1] - u[i, j])
             y_term2 = y_rho_half_minus * (u[i, j] - u[i, j - 1])
 
-            u_new[i, j] += 2 * u[i, j] - u_old[i, j] + ((dt ** 2 * c**2) / (rho[i,j] * dx ** 2)) * (x_term1 - x_term2) + ((dt ** 2 * c**2) / (rho[i,j] * dy ** 2)) * (y_term1 - y_term2)
+            u_new[i, j] = 2 * u[i, j] - u_old[i, j] + ((dt ** 2 * c**2) / (rho[i,j] * dx ** 2)) * (x_term1 - x_term2) + ((dt ** 2 * c**2) / (rho[i,j] * dy ** 2)) * (y_term1 - y_term2)
 
 
     # boundary condition (Dirichlet)
