@@ -16,12 +16,17 @@ timeSteps = 1000
 dt = time / (timeSteps - 1)
 
 # wave speed
-c = 5.0
+c = 6.0
 
 # spatially varying density
 rho = np.zeros(xPoints)
 for i in range(xPoints):
-    rho[i] = 1.0 - 0.05 * abs(x[i] - 0.5 * xLength)
+    rho[i] = 1.0 # - 0.05 * abs(x[i] - 0.5 * xLength)
+
+for i in range(10,20):
+    rho[i] = 1e-6
+
+print(rho)
 
 # stability (CFL condition)
 if (c * dt) / dx > 1.0:
@@ -53,10 +58,12 @@ def animate(frame):
     global u, u_old, u_new
     # central difference
     for i in range(1, xPoints - 1):
-        rho_half_plus = (rho[i] + rho[i + 1]) / 2
-        rho_half_minus = (rho[i] + rho[i - 1]) / 2
+        rho_half_plus = 1 / ((1 / (2 * rho[i])) + (1 / (2 * rho[i + 1])))
+        rho_half_minus = 1 / ((1 / (2 * rho[i])) + (1 / (2 * rho[i - 1])))
+
         term1 = rho_half_plus * (u[i + 1] - u[i])
         term2 = rho_half_minus * (u[i] - u[i - 1])
+
         u_new[i] = 2 * u[i] - u_old[i] + ((dt ** 2 * c**2) / (rho[i] * dx ** 2)) * (term1 - term2)
 
     '''
