@@ -5,10 +5,10 @@ import matplotlib.animation as animation
 # domain
 xMin = 0
 xMax = 10
-xPoints = 100
+xPoints = 200
 yMin = 0
 yMax = 10
-yPoints = 100
+yPoints = 200
 
 
 xLength = xMax - xMin
@@ -19,23 +19,28 @@ dx = xLength / (xPoints - 1)
 dy = yLength / (yPoints -1)
 
 # time
-time = 10.0
-timeSteps = 1000
+time = 2.0
+timeSteps = 2500
 dt = time / (timeSteps - 1)
 
 # wave speed
-c = 1.0
+c = 25
 
 # spatially varying density
 rho = np.zeros((xPoints, yPoints))
 for i in range(xPoints):
     for j in range(yPoints):
-        rho[i, j] += 1.0 - 0.005 * abs(x[i] - 0.5 * xLength) - 0.005 * abs(y[j] - 0.5 * yLength)
+        rho[i, j] = 1.0 # - 0.005 * abs(x[i] - 0.5 * xLength) - 0.005 * abs(y[j] - 0.5 * yLength)
+
+for i in range(20,80):
+    for j in range(20,80):
+        rho[i,j] = 1e-5
 
 # stability (CFL condition)
 if (c * dt) / dx > 1.0 or (c * dt) / dy > 1.0:
     raise ValueError("CLF condition is not satisfied!")
 
+print((c*dt)/dx)
 # initialize arrays
 u = np.zeros((xPoints, yPoints))
 u_old = np.zeros((xPoints, yPoints))
@@ -44,7 +49,7 @@ u_new = np.zeros((xPoints, yPoints))
 # initial condition
 x0 = xLength / 2
 y0 = yLength / 2
-sigma = 0.5
+sigma = 0.1
 for i in range(xPoints):
     for j in range(yPoints):
         u[i, j] = 2*np.exp(-((x[i] - x0) ** 2 + (y[j] - y0) ** 2) / (2 * sigma ** 2))
@@ -67,11 +72,11 @@ def animate(frame):
     # central difference
     for i in range(1, xPoints - 1):
         for j in range(1, yPoints - 1):
-            x_rho_half_plus = (rho[i, j] + rho[i + 1, j]) / 2
-            x_rho_half_minus = (rho[i, j] + rho[i - 1, j]) / 2
+            x_rho_half_plus = 1 / ((1 / (2 * rho[i,j])) + (1 / (2 * rho[i + 1,j])))
+            x_rho_half_minus = 1 / ((1 / (2 * rho[i,j])) + (1 / (2 * rho[i - 1,j])))
 
-            y_rho_half_plus = (rho[i, j] + rho[i, j + 1]) / 2
-            y_rho_half_minus = (rho[i, j] + rho[i, j - 1]) / 2
+            y_rho_half_plus = 1 / ((1 / (2 * rho[i, j])) + (1 / (2 * rho[i, j + 1])))
+            y_rho_half_minus = 1 / ((1 / (2 * rho[i, j])) + (1 / (2 * rho[i, j - 1])))
 
             x_term1 = x_rho_half_plus * (u[i + 1, j] - u[i, j])
             x_term2 = x_rho_half_minus * (u[i, j] - u[i - 1, j])
@@ -111,6 +116,6 @@ def animate(frame):
 
 
 # animation
-ani = animation.FuncAnimation(fig, animate, frames=timeSteps, blit=True, interval=50)
+ani = animation.FuncAnimation(fig, animate, frames=timeSteps, blit=True, interval=0.0)
 plt.xlabel('x')
 plt.show()
