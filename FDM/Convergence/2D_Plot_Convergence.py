@@ -34,36 +34,47 @@ Max = 1
 
 nPoints = [11, 21, 41, 81, 161]
 
-timeSteps = 700
-dt = 0.001
+timeSteps = 1400
+dt = 0.0005
 
-for iPoints in nPoints:
+delta = np.zeros((len(nPoints)))
+L2 = np.zeros((len(nPoints)))
 
-    x = import_xPoints(iPoints)
-    y = import_yPoints(iPoints)
-    u_num = import_numerical(iPoints, timeSteps, dt)
-    u_ref = import_analytical(iPoints, timeSteps, dt)
+for k in range(len(nPoints)):
 
-    delta= 1 / (iPoints - 1)
+    x = import_xPoints(nPoints[k])
+    y = import_yPoints(nPoints[k])
+    u_num = import_numerical(nPoints[k], timeSteps, dt)
+    u_ref = import_analytical(nPoints[k], timeSteps, dt)
 
-    error = np.zeros((iPoints,iPoints))
-    ref = np.zeros((iPoints,iPoints))
+    delta[k] = 1 / (nPoints[k] - 1)
 
-    for i in range(iPoints):
-        for j in range(iPoints):
+    error = np.zeros((nPoints[k], nPoints[k]))
+    ref = np.zeros((nPoints[k], nPoints[k]))
+
+    for i in range(nPoints[k]):
+        for j in range(nPoints[k]):
             error[i,j] = (u_num[i,j] - u_ref[i,j]) ** 2
             ref[i,j] = u_ref[i,j] ** 2
 
-    error_int_y = trapezoid(error, y, dx=delta, axis=0)
-    error_int = trapezoid(error_int_y, x, dx=delta)
+    error_int_y = trapezoid(error, y, dx=delta[k], axis=0)
+    error_int = trapezoid(error_int_y, x, dx=delta[k])
 
-    ref_int_y = trapezoid(ref, y, dx=delta, axis=0)
-    ref_int = trapezoid(ref_int_y, x, dx=delta)
+    ref_int_y = trapezoid(ref, y, dx=delta[k], axis=0)
+    ref_int = trapezoid(ref_int_y, x, dx=delta[k])
 
-    L2 = np.sqrt(error_int) / np.sqrt(ref_int)
+    L2[k] = np.sqrt(error_int) / np.sqrt(ref_int)
 
-    plt.scatter(delta, L2)
 
+plt.plot(delta, L2, lw=1.75, color="red", ls="-", marker="s", ms=5, label="$1400$ steps with dt$=0.0005$")
 plt.xscale("log")
 plt.yscale("log")
+plt.tick_params(axis='x', direction='in', which="both")
+plt.tick_params(axis='y', direction='in', which="both")
+
+plt.xlabel("dx, dy", fontsize=14)
+plt.ylabel("$L_{2}$ error", fontsize=14)
+plt.grid(True, alpha=0.5, which="major", linestyle="--")
+plt.tight_layout()
+plt.legend(loc="upper left", fancybox=False)
 plt.show()
