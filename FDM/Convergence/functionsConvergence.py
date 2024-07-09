@@ -21,4 +21,4 @@ def analyticSolution2D(x, y, t):
 
             temp += (term1 * term2 * term3) / term4
 
-    return (16 / (np.pi ** 2)) * temp
+    return (16 / (np.pi ** 6)) * temp
