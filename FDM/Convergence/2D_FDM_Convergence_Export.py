@@ -16,9 +16,9 @@ c = 1.0
 density = 1.0
 
 # time
-timeSteps = 700
-dt = 0.001
-time = dt * timeSteps
+timeSteps = 1400
+dt = 0.0005
+time = 0.7
 
 
 nPoints = [11, 21, 41, 81, 161]
@@ -85,11 +85,8 @@ for iPoints in nPoints:
         u[:, :] = u_new[:, :]
 
     u_ref = np.zeros((iPoints, iPoints))
-
-    for iX in range(1, iPoints - 1):
-        for jY in range(1, iPoints - 1):
-            u_ref[iX, jY] = fC.analyticSolution2D(x[iX], y[jY], time)
-
+    X,Y = np.meshgrid(x,y)
+    u_ref = fC.analyticSolution2D(X, Y, time)
 
     np.save(f"xPoints_{iPoints}", x)
     np.save(f"yPoints_{iPoints}", y)
