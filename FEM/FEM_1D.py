@@ -9,19 +9,19 @@ density = 1.0
 wavespeed = 1.0
 
 # initial displacement
-frequency = 1.0
+frequency = 2.0
 lambda_dom = wavespeed / frequency
 sigma = lambda_dom / (2 * np.pi)
 
 # computational domain
-xMin = -1.0
-xMax = 1.0
+xMin = -2.0
+xMax = 2.0
 # interface to fictitious domain
-interface = 5
+interface = 1.678
 alphaFCM = 1e-5
 
-# specifying IGA discretization in space
-n = 51
+# specifying discretization in space
+n = 501
 nodes = np.linspace(xMin, xMax, n)
 
 # specifying Time stepping
@@ -44,7 +44,9 @@ def basis_function_right_derivative(node1, node2):
 # initializing global system matrices
 Mg = np.zeros((n, n))
 Kg = np.zeros((n, n))
-Fg = np.zeros((n, 1))
+
+
+
 # vectors for projecting the initial conditions on the discretization space
 Fint_0 = np.zeros((n, 1))
 Fint_m1 = np.zeros((n, 1))
@@ -82,10 +84,10 @@ for iEl in range(0, nEl):
         DerBasisFunc_right = basis_function_right_derivative(node1, node2)
 
         # Right-hand side projection for initial conditions
-        Fint_0e[0] += GP_weights_scaled[iGP] * func.GaussianOverlay(xGP, 0, sigma, wavespeed, 0) * BasisFunc_left
-        Fint_0e[1] += GP_weights_scaled[iGP] * func.GaussianOverlay(xGP, 0, sigma, wavespeed, 0) * BasisFunc_right
-        Fint_m1e[0] += GP_weights_scaled[iGP] * func.GaussianOverlay(xGP, 0, sigma, wavespeed, -deltaT) * BasisFunc_left
-        Fint_m1e[1] += GP_weights_scaled[iGP] * func.GaussianOverlay(xGP, 0, sigma, wavespeed, -deltaT) * BasisFunc_right
+        #Fint_0e[0] += GP_weights_scaled[iGP] * func.GaussianOverlay(xGP, 0, sigma, wavespeed, 0) * BasisFunc_left
+        #Fint_0e[1] += GP_weights_scaled[iGP] * func.GaussianOverlay(xGP, 0, sigma, wavespeed, 0) * BasisFunc_right
+        #Fint_m1e[0] += GP_weights_scaled[iGP] * func.GaussianOverlay(xGP, 0, sigma, wavespeed, -deltaT) * BasisFunc_left
+        #Fint_m1e[1] += GP_weights_scaled[iGP] * func.GaussianOverlay(xGP, 0, sigma, wavespeed, -deltaT) * BasisFunc_right
 
         # Mass and stiffness matricesDerBasisFunc
         Me[0, 0] += alphaGP * density * GP_weights_scaled[iGP] * BasisFunc_left ** 2
@@ -113,14 +115,20 @@ uhat0 = invM @ Fint_0
 uhatm1 = invM @ Fint_m1
 
 nTimesteps = int(Tmax / deltaT) + 1
+print(nTimesteps)
 t = np.linspace(0.0, Tmax, nTimesteps)
 uhat = np.zeros((n, nTimesteps))
 uhat[:, 0] = np.squeeze(uhat0)
 uhat[:, 1] = np.squeeze(2 * uhat0 - uhatm1 - deltaT**2 * (invM @ (Kg @ uhat0)))
+Fg = np.zeros((n, nTimesteps))
+Fg[250,:] = func.generate_SinBurst(2, 3, 0.01 ,t)
+
 
 # Time stepping with Central Difference Method (CDM)
 for i in range(2, nTimesteps):
-    uhat[:, i] = 2 * uhat[:, i-1] - uhat[:, i-2] - deltaT**2 * (invM @ (Kg @ uhat[:, i-1]))
+    uhat[:, i] = 2 * uhat[:, i-1] - uhat[:, i-2] - deltaT**2 * (invM @ (Kg @ uhat[:, i-1])) + Fg[:,i]
+
+
 
 # Plotting initial solution
 nPoints = (n - 1) * 10 + 1
@@ -146,7 +154,7 @@ def animate(iT):
     line1.set_ydata(usim)
     return line1
 
-ani = animation.FuncAnimation(fig, animate, range(0, nTimesteps, 200), interval=500, repeat=False)
+ani = animation.FuncAnimation(fig, animate, range(0, nTimesteps, 200), interval=500, repeat=True)
 plt.show()
 
 
