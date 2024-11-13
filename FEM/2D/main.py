@@ -20,7 +20,7 @@ time_steps = 100        # Number of time steps
 system = System(domain_x, domain_y, num_elements_x, num_elements_y, wave_speed)
 
 # Solve the system in the time domain
-u_time = system.solve_time_domain(total_time, time_steps, "data")
+u_time = system.solve_time_domain(total_time, time_steps)
 
 system.get_info(detailed=True)
 
