@@ -23,5 +23,12 @@ def partitionGP(GPp, GPw, node1, node2):
     # weight is adjusted for smaller support of the inetgration
     GPw_return = [w * (node2 - node1) / 2.0 for w in GPw]
     return GPp_return, GPw_return
+
+
+def generate_SinBurst(frequency, cycles, amplitude,t):
+    omega = frequency * 2 * np.pi
+
+    return amplitude * ((t<= cycles / frequency) & (t>0)) * np.sin(omega * t) * (np.sin(omega * t / cycles )) ** 2
+
     
 
