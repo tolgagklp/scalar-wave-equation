@@ -340,7 +340,7 @@ class System:
 
         print(f"\nSystem saved successfully to {filename}.")
 
-    # Loading the saved data files
+    # Loading the saved data file
     def load(self, filename):
         """
         Load the system from the saved file.
@@ -365,24 +365,6 @@ class System:
         self.u_solved = data['u_solved']
 
         print(f"\nSystem loaded successfully from {filename}.")
-
-    def transform_to_time_domain(self, frequencies, U, total_time, time_steps):
-        dt = total_time / time_steps
-        t = np.linspace(0, total_time, time_steps)
-
-        u_time = np.zeros((time_steps, self.num_nodes))
-
-        # Inverse Fourier Transform using numerical integration
-        for node_index in range(self.num_nodes):
-            for time_index in range(time_steps):
-                integral_sum = 0
-                for freq_index, freq in enumerate(frequencies):
-                    omega = 2 * np.pi * freq
-                    integral_sum += U[freq_index, node_index] * np.exp(1j * omega * t[time_index])
-                
-                # Normalization
-                u_time[time_index, node_index] = integral_sum.real * (dt / (2 * np.pi))
-        return u_time
     
     # Function to animate wave propagation over time
     def animate_wave_propagation_time(self, total_time, time_steps):
@@ -392,19 +374,18 @@ class System:
         # Calculate the time step interval
         dt = total_time / time_steps
 
-        # Maksimum değerin %5'ine denk gelen bir eşik belirleyin
+        # Set some values below threshold 0 
         u_solved_max = self.u_solved.max()
         u_solved_min = self.u_solved.min()
         threshold = 0.1 * self.u_solved.max()
         
-        # Eşik değerinden küçük olanları NaN olarak ayarla
         u_solved_masked = np.where((self.u_solved > threshold) | (self.u_solved < -threshold),
                                    self.u_solved, 0)
     
-        # İlk zaman adımıyla veriyi şekillendirin
+        # Shaping u for animation for first time step
         reshaped_u = u_solved_masked[:, 0].reshape(self.num_elements_y + 1, self.num_elements_x + 1)
         
-        # Başlangıç görüntüsünü oluşturun
+        # Creating starting image
         self.im = ax.imshow(
             reshaped_u, 
             cmap='viridis', 
@@ -415,32 +396,32 @@ class System:
             vmax=u_solved_max
         )
 
-        # Grafik başlık ve etiketler
+        # Titles and labels
         ax.set_title("Wave Propagation Over Time")
         ax.set_xlabel("X Coordinate")
         ax.set_ylabel("Y Coordinate")
     
-        # Koordinat eksenleri için doğru aralıkları belirleyin
+        # Setting axes
         ax.set_xticks(np.linspace(self.domain_x[0], self.domain_x[1], 5))
         ax.set_yticks(np.linspace(self.domain_y[0], self.domain_y[1], 5))
     
-        # Animasyonun her karesi için güncelleme fonksiyonu
+        # Update function w.r.t frames
         def update(frame):
             """ Update function for the animation """
-            # Zaman adımı verilerini yeniden şekillendir
+            # Shaping u for each frame
             reshaped_u = u_solved_masked[:, frame].reshape(self.num_elements_y + 1, self.num_elements_x + 1)
             
-            # Görüntüyü güncelle
+            # Update image
             self.im.set_array(reshaped_u)
             self.im.set_clim(vmin=reshaped_u.min(), vmax=reshaped_u.max())
             
-            # Zamanı başlıkta göster
+            # Display time at the top
             ax.set_title(f"Wave Propagation at t = {frame * dt:.2f} s")
             
             return [self.im]
     
-        # FuncAnimation kullanarak animasyonu oluştur
+        # FuncAnimation
         ani = FuncAnimation(fig, update, frames=time_steps, interval=100, blit=False)
     
-        # Animasyonu göster
+        # Show animation
         plt.show()
