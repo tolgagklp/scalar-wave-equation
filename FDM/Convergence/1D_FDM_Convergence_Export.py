@@ -1,36 +1,46 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import functionsConvergence as fC
+import time
+from scipy.integrate import trapezoid
 
-# domain
-xMin = 0
-xMax = 10
-#xPoints = [101, 251, 501, 1001, 2501, 5001]
-xPoints = [51, 101, 201, 401, 601, 1201]
+# discretization for convergence
+xPoints = [80, 120, 160, 240, 320, 480, 640, 1280, 2560]
+delta_x = [16/80, 16/120, 16/160, 16/240, 16/320, 16/480, 16/640, 16/1280, 16/2560]
 
-# time
-dt = 0.001
-timeSteps = 2500
+for i_xP in range(len(xPoints)):
 
-# wave speed
-c = 1.0
+    # start time
+    start = time.time()
 
-# density
-rho_0 = 1.0
-
-
-for i_xPoints in xPoints:
+    # domain
+    xMin = -8.0
+    xMax = 8.0
+    i_xPoints = xPoints[i_xP] + 1
     xLength = xMax - xMin
     x = np.linspace(xMin, xMax, i_xPoints)
     dx = xLength / (i_xPoints - 1)
 
+    # time
+    Tmax = 8
+    dt = 5e-4
+    timeSteps = int(Tmax / dt) + 1
 
-    # spatially varying density
+    # material parameters
+    wavespeed = 1.0
+    density = 1.0
+
+    # initial displacement
+    frequency = 1.0
+    lamda = wavespeed / frequency
+    sigma = lamda / 2 / np.pi
+
+
+    # density
     rho = np.zeros(i_xPoints)
-    rho[:] = rho_0
+    rho[:] = density
 
-    # stability (CFL condition)
-    if (c * dt) / dx > 1.0:
+    # stability - CFL condition
+    if (wavespeed * dt) / dx > 1.0:
         raise ValueError("CLF condition c*dt / dx <= 1.0 is not satisfied!")
 
     # initialize arrays
@@ -40,39 +50,67 @@ for i_xPoints in xPoints:
     u_ref = np.zeros(i_xPoints)
 
     # initial condition
-    x0 = xLength / 2
-    sigma = 0.5
+    x0 = 0
     for i in range(0, i_xPoints):
-        u[i] = fC.analyticGaussianSolution(x[i], x0, 0, c, sigma)
-    # set previous the same a start time
+        u[i] = fC.analyticGaussianSolution(x[i], x0, 0, wavespeed, sigma)
+
+    # set previous timestep the same a start time
     u_old[:] = u
 
-    # time stepping
+    # time stepping - looping over all timesteps
+    T = 0
     for j in range(1, timeSteps+1):
+        T += dt
 
-        # central difference
+        # central difference - looping over all points
         for i in range(1, i_xPoints - 1):
             rho_half_plus = 1 / ((1 / (2 * rho[i])) + (1 / (2 * rho[i + 1])))
             rho_half_minus = 1 / ((1 / (2 * rho[i])) + (1 / (2 * rho[i - 1])))
             term1 = rho_half_plus * (u[i + 1] - u[i])
             term2 = rho_half_minus * (u[i] - u[i - 1])
 
-            u_new[i] = 2 * u[i] - u_old[i] + ((dt ** 2 * c ** 2) / (rho[i] * dx ** 2)) * (term1 - term2)
+            u_new[i] = 2 * u[i] - u_old[i] + ((dt ** 2 * wavespeed ** 2) / (rho[i] * dx ** 2)) * (term1 - term2)
 
-            u_ref[i] = fC.analyticGaussianSolution(x[i], x0, j*dt, c, sigma)
+        # Dirichlet boundary condition
+        # u_new[0] = 0
+        # u_new[-1] = 0
 
-        # boundary condition (Neumann)
+        # Neumann boundary condition
         u_new[0] = u_new[1]
         u_new[-1] = u_new[-2]
+
+        # Absorbing boundary condition
+        # u_new[0] = u[1] + ((c * dt - dx) / (c * dt + dx)) * (u_new[1] - u[0])
+        # u_new[-1] = u[-2] + ((c * dt - dx) / (c * dt + dx)) * (u_new[-2] - u[-1])
 
         # update time step
         u_old[:] = u
         u[:] = u_new
 
-    np.save(f"x_xPoints_{i_xPoints}", x)
-    np.save(f"u_FDM_xPoints_{i_xPoints}_dt_{dt}_timeSteps_{timeSteps}", u)
-    np.save(f"u_ref_xPoints_{i_xPoints}_dt_{dt}_timeSteps_{timeSteps}", u_ref)
+    # end time
+    end = time.time()
 
-#plt.plot(x, u, 'r--')
-#plt.plot(x, u_ref, 'b-')
-#plt.show()
+    # run time
+    time_s = end - start
+
+    # compute L2 error for time T
+    error = np.zeros(i_xPoints)
+    ref = np.zeros(i_xPoints)
+    for i_X in range(len(x)):
+        ref_uhat = fC.analyticGaussianSolution(x[i_X], 0, T, wavespeed, sigma)
+
+        error[i_X] = (u[i_X] - ref_uhat) ** 2
+        ref[i_X] = ref_uhat ** 2
+
+    L2 = np.sqrt(trapezoid(error, x, dx=delta_x[i_xP]) / trapezoid(ref, x, dx=delta_x[i_xP]))
+
+    # print for pre-checking results
+    #print(T)
+    #print(i_xPoints)
+    #print(time_s)
+    #print(L2)
+
+    # exporting results
+    #np.save(f"FDM_{i_xPoints - 1}_time", time_s)
+    #np.save(f"FDM_{i_xPoints - 1}_L2", L2)
+    #np.save(f"FDM_{i_xPoints - 1}_X", x)
