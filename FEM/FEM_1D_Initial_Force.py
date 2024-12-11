@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import numpy.polynomial.legendre as geek
 import matplotlib.animation as animation
-import func
+import FEMfunc as func
 from matplotlib.animation import PillowWriter
 
 # material parameters
