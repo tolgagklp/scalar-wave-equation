@@ -15,7 +15,7 @@ def import_numerical(iPoints, timeSteps, dt):
     Returns:
         numpy.ndarray: Numerical solution array loaded from the specified file.
     """
-    script = os.path.dirname(os.path.abspath("2D_Plot_Convergence.py"))
+    script = os.path.dirname(os.path.abspath("Conv_2D_Plot.py"))
     folder = "Data"
     file_name = f"u_FDM_iPoints_{iPoints}_dt_{dt}_timeSteps_{timeSteps}.npy"
 
@@ -33,7 +33,7 @@ def import_analytical(iPoints, timeSteps, dt):
     Returns:
         numpy.ndarray: Analytical solution array loaded from the specified file.
     """
-    script = os.path.dirname(os.path.abspath("2D_Plot_Convergence.py"))
+    script = os.path.dirname(os.path.abspath("Conv_2D_Plot.py"))
     folder = "Data"
     file_name = f"u_ref_iPoints_{iPoints}_dt_{dt}_timeSteps_{timeSteps}.npy"
 
@@ -49,7 +49,7 @@ def import_xPoints(xPoints):
     Returns:
         numpy.ndarray: Array of x-coordinate points loaded from the specified file.
     """
-    script = os.path.dirname(os.path.abspath("2D_Plot_Convergence.py"))
+    script = os.path.dirname(os.path.abspath("Conv_2D_Plot.py"))
     folder = "Data"
     file_name = f"xPoints_{xPoints}.npy"
 
@@ -65,7 +65,7 @@ def import_yPoints(xPoints):
     Returns:
         numpy.ndarray: Array of y-coordinate points loaded from the specified file.
     """
-    script = os.path.dirname(os.path.abspath("2D_Plot_Convergence.py"))
+    script = os.path.dirname(os.path.abspath("Conv_2D_Plot.py"))
     folder = "Data"
     file_name = f"yPoints_{xPoints}.npy"
 
