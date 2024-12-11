@@ -6,8 +6,8 @@ import matplotlib.animation as animation
 xMin = -2
 xMax = 2
 xPoints = 161
-xLength = xMax - xMin
 x = np.linspace(xMin, xMax, xPoints)
+xLength = xMax - xMin
 dx = xLength / (xPoints - 1)
 
 # time
