@@ -78,7 +78,7 @@ def animate(frame):
     u_new[0] = u_new[1]
     u_new[-1] = u_new[-2]
 
-    # Absorbing boundary conditions
+    # Absorbing boundary condition
     #u_new[0] = u[1] + ((c * dt - dx) / (c * dt + dx)) * (u_new[1] - u[0])
     #u_new[-1] = u[-2] + ((c * dt - dx) / (c * dt + dx)) * (u_new[-2] - u[-1])
 

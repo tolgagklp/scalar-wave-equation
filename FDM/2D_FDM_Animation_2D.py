@@ -6,6 +6,7 @@ import matplotlib.animation as animation
 xMin = 0
 xMax = 10
 xPoints = 200
+
 yMin = 0
 yMax = 10
 yPoints = 200
