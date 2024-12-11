@@ -32,16 +32,63 @@ nTimesteps = int(Tmax / deltaT) + 1
 
 # linear basis functions and their derivatives
 def basis_function_left(x, node1, node2):
+    """
+    Computes the value of the left linear basis function at a given point.
+
+    Parameters:
+        x (float): The evaluation point.
+        node1 (float): The left node of the element.
+        node2 (float): The right node of the element.
+
+    Returns:
+        float: The value of the left basis function at x.
+    """
+
     return (node2 - x) / (node2 - node1)
 
 def basis_function_right(x, node1, node2):
+    """
+    Computes the value of the right linear basis function at a given point.
+
+    Parameters:
+        x (float): The evaluation point.
+        node1 (float): The left node of the element.
+        node2 (float): The right node of the element.
+
+    Returns:
+        float: The value of the right basis function at x.
+    """
+
     return (x - node1) / (node2 - node1)
 
 def basis_function_left_derivative(node1, node2):
+    """
+    Computes the derivative of the left linear basis function.
+
+    Parameters:
+        node1 (float): The left node of the element.
+        node2 (float): The right node of the element.
+
+    Returns:
+        float: The derivative of the left basis function.
+    """
+
     return -1.0 / (node2 - node1)
 
 def basis_function_right_derivative(node1, node2):
+    """
+    Computes the derivative of the right linear basis function.
+
+    Parameters:
+        node1 (float): The left node of the element.
+        node2 (float): The right node of the element.
+
+    Returns:
+        float: The derivative of the right basis function.
+    """
+    
     return 1.0 / (node2 - node1)
+
 
 # initializing global system matrices
 Mg = np.zeros((n, n))
