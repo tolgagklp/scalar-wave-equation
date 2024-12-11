@@ -7,10 +7,10 @@ from matplotlib.animation import PillowWriter
 xMin = 0
 xMax = 1
 xPoints = 51
+
 yMin = 0
 yMax = 1
 yPoints = 51
-
 
 xLength = xMax - xMin
 yLength = yMax - yMin
@@ -21,24 +21,22 @@ dy = yLength / (yPoints - 1)
 
 # time
 time = 1.0
-timeSteps = 140
 dt = 0.01
+timeSteps = int(time / dt) + 1
 
-# wave speed
-c = 1.0
+# material parameters
+wavespeed = 1.0
+density = 1.0
 
 # spatially varying density
 rho = np.zeros((xPoints, yPoints))
-for i in range(xPoints):
-    for j in range(yPoints):
-        rho[i, j] = 1.0
+rho[:, :] = density
 
 
-# stability (CFL condition)
-print("CFL value: ", (c * dt) / dx)
-
-if (c * dt) / dx > 1.0 or (c * dt) / dy > 1.0:
+# stability - CFL condition
+if (wavespeed * dt) / dx > 1.0 or (wavespeed * dt) / dy > 1.0:
     raise ValueError("CLF condition is not satisfied!")
+print("CFL value: ", (wavespeed * dt) / dx)
 
 # initialize arrays
 u = np.zeros((xPoints, yPoints))
@@ -59,9 +57,13 @@ ax = fig.add_subplot(111, projection='3d')
 X, Y = np.meshgrid(x, y)
 surface = ax.plot_surface(X, Y, u.T, cmap='plasma', vmin=-0.06, vmax=0.06)
 
+# Prepare plot parameters
 ax.set_xlim(xMin, xMax)
 ax.set_ylim(yMin, yMax)
 ax.set_zlim(-0.07, 0.07)
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('Displacement $u(x,y)$')
 
 # update function
 def animate(frame):
@@ -81,7 +83,7 @@ def animate(frame):
             y_term1 = y_rho_half_plus * (u[i, j + 1] - u[i, j])
             y_term2 = y_rho_half_minus * (u[i, j] - u[i, j - 1])
 
-            u_new[i, j] = 2 * u[i, j] - u_old[i, j] + ((dt ** 2 * c**2) / (rho[i,j] * dx ** 2)) * (x_term1 - x_term2) + ((dt ** 2 * c**2) / (rho[i,j] * dy ** 2)) * (y_term1 - y_term2)
+            u_new[i, j] = 2 * u[i, j] - u_old[i, j] + ((dt ** 2 * wavespeed**2) / (rho[i,j] * dx ** 2)) * (x_term1 - x_term2) + ((dt ** 2 * wavespeed**2) / (rho[i,j] * dy ** 2)) * (y_term1 - y_term2)
 
 
     # boundary condition (Dirichlet)
@@ -102,6 +104,7 @@ def animate(frame):
     ax.set_zlim(-0.07, 0.07)
     ax.set_xlabel('x')
     ax.set_ylabel('y')
+    ax.set_zlabel('Displacement $u(x,y)$')
 
     return surface,
 
@@ -112,6 +115,5 @@ ani = animation.FuncAnimation(fig, animate, frames=timeSteps, blit=False, interv
 plt.show()
 
 # safe animation
-
-writer = PillowWriter(fps=10)
-ani.save("2D_popagation.gif", writer=writer)
+#writer = PillowWriter(fps=10)
+#ani.save("2D_popagation.gif", writer=writer)
