@@ -3,30 +3,32 @@ import numpy as np
 import numpy.polynomial.legendre as geek
 import matplotlib.animation as animation
 import func
+from matplotlib.animation import PillowWriter
 
 # material parameters
 density = 1.0
 wavespeed = 1.0
 
 # initial displacement
-frequency = 2.0
+frequency = 1.0
 lambda_dom = wavespeed / frequency
-sigma = lambda_dom / (2 * np.pi)
+sigma = lambda_dom / 2 / np.pi
 
 # computational domain
 xMin = -2.0
 xMax = 2.0
 # interface to fictitious domain
-interface = 1.678
+interface = 2.0
 alphaFCM = 1e-5
 
 # specifying discretization in space
-n = 501
+n = 161
 nodes = np.linspace(xMin, xMax, n)
 
 # specifying Time stepping
 deltaT = 1e-3
-Tmax = (2 * interface) / wavespeed
+Tmax = 2*(2 * interface) / wavespeed
+nTimesteps = int(Tmax / deltaT) + 1
 
 # linear basis functions and their derivatives
 def basis_function_left(x, node1, node2):
@@ -45,9 +47,7 @@ def basis_function_right_derivative(node1, node2):
 Mg = np.zeros((n, n))
 Kg = np.zeros((n, n))
 
-
-
-# vectors for projecting the initial conditions on the discretization space
+# vectors for projecting the initial conditions
 Fint_0 = np.zeros((n, 1))
 Fint_m1 = np.zeros((n, 1))
 
@@ -83,13 +83,7 @@ for iEl in range(0, nEl):
         DerBasisFunc_left = basis_function_left_derivative(node1, node2)
         DerBasisFunc_right = basis_function_right_derivative(node1, node2)
 
-        # Right-hand side projection for initial conditions
-        #Fint_0e[0] += GP_weights_scaled[iGP] * func.GaussianOverlay(xGP, 0, sigma, wavespeed, 0) * BasisFunc_left
-        #Fint_0e[1] += GP_weights_scaled[iGP] * func.GaussianOverlay(xGP, 0, sigma, wavespeed, 0) * BasisFunc_right
-        #Fint_m1e[0] += GP_weights_scaled[iGP] * func.GaussianOverlay(xGP, 0, sigma, wavespeed, -deltaT) * BasisFunc_left
-        #Fint_m1e[1] += GP_weights_scaled[iGP] * func.GaussianOverlay(xGP, 0, sigma, wavespeed, -deltaT) * BasisFunc_right
-
-        # Mass and stiffness matricesDerBasisFunc
+        # Mass and stiffness matrices
         Me[0, 0] += alphaGP * density * GP_weights_scaled[iGP] * BasisFunc_left ** 2
         Me[0, 1] += alphaGP * density * GP_weights_scaled[iGP] * BasisFunc_left * BasisFunc_right
         Me[1, 1] += alphaGP * density * GP_weights_scaled[iGP] * BasisFunc_right ** 2
@@ -98,7 +92,7 @@ for iEl in range(0, nEl):
         Ke[0, 1] += alphaGP * density * wavespeed ** 2 * GP_weights_scaled[iGP] * DerBasisFunc_left * DerBasisFunc_right
         Ke[1, 1] += alphaGP * density * wavespeed ** 2 * GP_weights_scaled[iGP] * DerBasisFunc_right ** 2
 
-    Me[1,0] = Me[0,1]
+    Me[1, 0] = Me[0, 1]
     Ke[1, 0] = Ke[0, 1]
 
     # Scatter to global matrices
@@ -114,24 +108,21 @@ invM = np.linalg.inv(Mg)
 uhat0 = invM @ Fint_0
 uhatm1 = invM @ Fint_m1
 
-nTimesteps = int(Tmax / deltaT) + 1
-print(nTimesteps)
 t = np.linspace(0.0, Tmax, nTimesteps)
 uhat = np.zeros((n, nTimesteps))
 uhat[:, 0] = np.squeeze(uhat0)
 uhat[:, 1] = np.squeeze(2 * uhat0 - uhatm1 - deltaT**2 * (invM @ (Kg @ uhat0)))
 Fg = np.zeros((n, nTimesteps))
-Fg[250,:] = func.generate_SinBurst(2, 3, 0.01 ,t)
+Fg[int(n/2),:] = func.generate_SinBurst(frequency, 1, 0.0005 ,t)
 
 
 # Time stepping with Central Difference Method (CDM)
 for i in range(2, nTimesteps):
-    uhat[:, i] = 2 * uhat[:, i-1] - uhat[:, i-2] - deltaT**2 * (invM @ (Kg @ uhat[:, i-1])) + Fg[:,i]
-
+    uhat[:, i] = 2 * uhat[:, i-1] - uhat[:, i-2] - deltaT**2 * (invM @ (Kg @ uhat[:, i-1]))  + Fg[:,i]
 
 
 # Plotting initial solution
-nPoints = (n - 1) * 10 + 1
+nPoints = n
 xPlot = np.linspace(xMin, xMax, nPoints)
 usim = np.zeros(nPoints)
 for j, x in enumerate(xPlot):
@@ -141,7 +132,7 @@ for j, x in enumerate(xPlot):
         usim[j] = uhat[iEl, 0] * basis_function_left(x, x1, x2) + uhat[iEl + 1, 0] * basis_function_right(x, x1, x2)
 
 fig, ax = plt.subplots()
-line1, = ax.plot(xPlot, usim)
+line1, = ax.plot(xPlot, usim, ls="-")
 
 # Animation of the solution
 def animate(iT):
@@ -154,7 +145,18 @@ def animate(iT):
     line1.set_ydata(usim)
     return line1
 
-ani = animation.FuncAnimation(fig, animate, range(0, nTimesteps, 200), interval=500, repeat=True)
+ani = animation.FuncAnimation(fig, animate, range(0, nTimesteps, 50), interval=175, repeat=True)
+# Plot parameters
+plt.ylim([-0.5, 2.2])
+plt.xlim([xMin, xMax])
+plt.tick_params(axis='x', direction='in', which="both", labelsize=13)
+plt.tick_params(axis='y', direction='in', which="both", labelsize=13)
+plt.xlabel("$x$", fontsize=16)
+plt.ylabel("$u(x)$", fontsize=16)
+plt.grid(True, alpha=0.5, which="major", linestyle="--")
 plt.show()
+
+#writer = PillowWriter(fps=10)
+#ani.save("1D_FEM_Damage.gif", writer=writer)
 
 
