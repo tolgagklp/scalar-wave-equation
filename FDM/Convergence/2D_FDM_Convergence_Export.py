@@ -5,14 +5,13 @@ import functionsConvergence as fC
 xMin = 0
 xMax = 1
 xLength = xMax - xMin
+
 yMin = 0
 yMax = 1
 yLength = yMax - yMin
 
-# wave speed
-c = 1.0
-
-# density
+# material parameters
+wavespeed = 1.0
 density = 1.0
 
 # time
@@ -20,7 +19,7 @@ timeSteps = 1400
 dt = 0.0005
 time = 0.7
 
-
+# number of points in each direction for convergence
 nPoints = [11, 21, 41, 81, 161]
 
 for iPoints in nPoints:
@@ -32,15 +31,13 @@ for iPoints in nPoints:
 
     # spatially varying density
     rho = np.zeros((iPoints, iPoints))
-    for i in range(iPoints):
-        for j in range(iPoints):
-            rho[i, j] = density
+    rho[:, :] = density
 
 
     # stability (CFL condition)
-    if (c * dt) / dx > 1.0 or (c * dt) / dy > 1.0:
+    if (wavespeed * dt) / dx > 1.0 or (wavespeed * dt) / dy > 1.0:
         raise ValueError("CLF condition is not satisfied!")
-    print("CFL value: ", (c * dt) / dx)
+    print("CFL value: ", (wavespeed * dt) / dx)
 
     # initialize arrays
     u = np.zeros((iPoints, iPoints))
@@ -72,9 +69,9 @@ for iPoints in nPoints:
                 y_term1 = y_rho_half_plus * (u[i, j + 1] - u[i, j])
                 y_term2 = y_rho_half_minus * (u[i, j] - u[i, j - 1])
 
-                u_new[i, j] = 2 * u[i, j] - u_old[i, j] + ((dt ** 2 * c**2) / (rho[i,j] * dx ** 2)) * (x_term1 - x_term2) + ((dt ** 2 * c**2) / (rho[i,j] * dy ** 2)) * (y_term1 - y_term2)
+                u_new[i, j] = 2 * u[i, j] - u_old[i, j] + ((dt ** 2 * wavespeed**2) / (rho[i,j] * dx ** 2)) * (x_term1 - x_term2) + ((dt ** 2 * wavespeed**2) / (rho[i,j] * dy ** 2)) * (y_term1 - y_term2)
 
-        # boundary condition (Dirichlet)
+        # Dirichlet boundary condition
         u_new[0, :] = 0
         u_new[:, 0] = 0
         u_new[-1, :] = 0
@@ -86,8 +83,11 @@ for iPoints in nPoints:
 
     u_ref = np.zeros((iPoints, iPoints))
     X,Y = np.meshgrid(x,y)
+
+    # compute analytical solution
     u_ref = fC.analyticSolution2D(X, Y, time)
 
+    # save results
     np.save(f"xPoints_{iPoints}", x)
     np.save(f"yPoints_{iPoints}", y)
     np.save(f"u_FDM_iPoints_{iPoints}_dt_{dt}_timeSteps_{timeSteps}", u)
