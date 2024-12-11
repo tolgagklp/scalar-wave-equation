@@ -26,8 +26,7 @@ sigma = lamda / 2 / np.pi
 
 # density
 rho = np.zeros(xPoints)
-for i in range(xPoints):
-    rho[i] = density
+rho[:] = density
 
 # create damaged area
 #for i in range(10,20):

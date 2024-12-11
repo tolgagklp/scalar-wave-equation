@@ -3,7 +3,7 @@ import functionsConvergence as fC
 import time
 from scipy.integrate import trapezoid
 
-# discretization for convergence
+# discretization for convergence - same to FEM
 xPoints = [80, 120, 160, 240, 320, 480, 640, 1280, 2560]
 delta_x = [16/80, 16/120, 16/160, 16/240, 16/320, 16/480, 16/640, 16/1280, 16/2560]
 
@@ -97,6 +97,8 @@ for i_xP in range(len(xPoints)):
     error = np.zeros(i_xPoints)
     ref = np.zeros(i_xPoints)
     for i_X in range(len(x)):
+
+        # analytical solution for time T and same initial displacment 
         ref_uhat = fC.analyticGaussianSolution(x[i_X], 0, T, wavespeed, sigma)
 
         error[i_X] = (u[i_X] - ref_uhat) ** 2

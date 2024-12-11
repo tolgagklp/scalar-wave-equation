@@ -35,9 +35,7 @@ sigma = lamda / 2 / np.pi
 
 # density
 rho = np.zeros((xPoints, yPoints))
-for i in range(xPoints):
-    for j in range(yPoints):
-        rho[i, j] = density
+rho[:, :] = density
 
 # create damaged area
 #for i in range(10,35):
