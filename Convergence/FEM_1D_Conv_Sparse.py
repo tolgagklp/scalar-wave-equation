@@ -8,21 +8,70 @@ from scipy.sparse.linalg import spsolve
 
 # linear basis functions and their derivatives
 def basis_function_left(x, node1, node2):
+    """
+    Computes the value of the left linear basis function at a given point.
+
+    Parameters:
+        x (float): The evaluation point.
+        node1 (float): The left node of the element.
+        node2 (float): The right node of the element.
+
+    Returns:
+        float: The value of the left basis function at x.
+    """
+
     return (node2 - x) / (node2 - node1)
+
 def basis_function_right(x, node1, node2):
+    """
+    Computes the value of the right linear basis function at a given point.
+
+    Parameters:
+        x (float): The evaluation point.
+        node1 (float): The left node of the element.
+        node2 (float): The right node of the element.
+
+    Returns:
+        float: The value of the right basis function at x.
+    """
+
     return (x - node1) / (node2 - node1)
+
 def basis_function_left_derivative(node1, node2):
+    """
+    Computes the derivative of the left linear basis function.
+
+    Parameters:
+        node1 (float): The left node of the element.
+        node2 (float): The right node of the element.
+
+    Returns:
+        float: The derivative of the left basis function.
+    """
+
     return -1.0 / (node2 - node1)
+
 def basis_function_right_derivative(node1, node2):
+    """
+    Computes the derivative of the right linear basis function.
+
+    Parameters:
+        node1 (float): The left node of the element.
+        node2 (float): The right node of the element.
+
+    Returns:
+        float: The derivative of the right basis function.
+    """
+    
     return 1.0 / (node2 - node1)
 
-
+# discretization for convergence
 Elements = [80, 120, 160, 240, 320, 480, 640, 1280, 2560]
 delta_x = [16/80, 16/120, 16/160, 16/240, 16/320, 16/480, 16/640, 16/1280, 16/2560]
 
-
 for i_El in range(len(Elements)):
 
+    # start time 
     start = time.time()
 
     # material parameters
@@ -33,7 +82,6 @@ for i_El in range(len(Elements)):
     frequency = 1.0
     lambda_dom = wavespeed / frequency
     sigma = lambda_dom / (2 * np.pi)
-
 
     # computational domain
     xMin = -8.0
@@ -127,7 +175,6 @@ for i_El in range(len(Elements)):
     # Use sparse solver to compute uhat0 and uhatm1
     uhat0 = spsolve(Mg, Fint_0)
     uhatm1 = spsolve(Mg, Fint_m1)
-
 
     uhat = np.zeros((n, nTimesteps))
     uhat[:, 0] = np.squeeze(uhat0)
