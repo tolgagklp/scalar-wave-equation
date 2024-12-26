@@ -1,10 +1,7 @@
 import numpy as np
-import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import pickle
-from scipy.fft import fft2
-from scipy.sparse.linalg import spsolve
 
 # Gamma function for spatially varying density
 def gamma_function(x, y):
@@ -110,7 +107,7 @@ def create_mesh(domain_x, domain_y, num_elements_x, num_elements_y, wavespeed):
     # Indicate Mesh creating is done
     print("\nMesh is created.")
     print(f"Total number of nodes is {len(nodes)}")
-    print(f"Total number of elements is {len(elements)}\n")
+    print(f"Total number of elements is {len(elements)}")
 
     return nodes, elements
 
@@ -204,6 +201,8 @@ class System:
                     self.global_stiffness[global_i, global_j] += local_stiffness[i, j]
                     self.global_mass[global_i, global_j] += local_mass[i, j]
 
+        print("\nGlobal matrices assembled")
+
     def apply_boundary_conditions(self):
         for i in range(self.num_nodes):
             if (self.nodes[i].x == self.domain_x[0] or self.nodes[i].x == self.domain_x[1] or 
@@ -239,7 +238,7 @@ class System:
         """
         Solving the system with initial conditions.
         """
-
+        print("\nSOLVING IS STARTED")
         initial_displacement = self.gaussian_initial_condition()
         initial_velocity = np.zeros(self.num_nodes)
         u = np.zeros((self.num_nodes, time_steps))  # Displacement matrix( columns -> timesteps )
@@ -252,6 +251,9 @@ class System:
         u[:, 1] = u[:, 0] + dt * v
 
         for n in range(1, time_steps - 1):
+            if n % (time_steps // 10) == 0:  
+                progress = (n / (time_steps - 1)) * 100 
+                print(f"{progress:.0f}% completed")
             u[:, n + 1] = (
                 2 * u[:, n]
                 - u[:, n - 1]
@@ -259,6 +261,7 @@ class System:
             )
 
         self.u_solved = u
+        print("SOLVING IS DONE")
         return u
     
     # Function for saving the system variables after solving
