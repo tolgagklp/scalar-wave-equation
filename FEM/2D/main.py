@@ -1,5 +1,4 @@
 from classes import System
-import numpy as np
 """
 PLEASE CHANGE GAMMA FUNCTION IN classes.py TO DEFINE DAMAGED DOMAIN.
 """
