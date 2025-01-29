@@ -214,7 +214,7 @@ class System:
                 
     def gaussian_initial_condition(self):
         """
-        Gaussian dalga formunda başlangıç yer değiştirmesi oluşturur.
+        Creates an initial displacement in the form of a Gaussian wave.
         """
         x0 = (self.domain_x[0] + self.domain_x[1]) / 2
         y0 = (self.domain_y[0] + self.domain_y[1]) / 2
