@@ -9,10 +9,40 @@ from scipy.sparse.linalg import spsolve
 
 # Gamma function for spatially varying density
 def gamma_function(x, y):
-    return 1
+    """
+    Defines the spatially varying density function.
+    
+    Parameters:
+    x (float): X-coordinate
+    y (float): Y-coordinate
+    
+    Returns:
+    float: Density value at the given coordinates
+    """
+    if -0.8 <= x <= -0.5 and -0.8 <= y <= -0.5:
+        return 1.0
+    return 1.0
 
 class Node:
+    """
+    Represents a node in the finite element mesh.
+    
+    Attributes:
+    x (float): X-coordinate of the node
+    y (float): Y-coordinate of the node
+    u (float): Displacement associated with the node (default is 0)
+    shape_xi (float or None): Isoparametric coordinate in xi direction
+    shape_eta (float or None): Isoparametric coordinate in eta direction
+    """
     def __init__(self, x, y, u=0):
+        """
+        Initializes a Node object.
+        
+        Parameters:
+        x (float): X-coordinate of the node
+        y (float): Y-coordinate of the node
+        u (float, optional): Value associated with the node (default is 0)
+        """
         self.x = x
         self.y = y
         self.u = u
@@ -20,11 +50,32 @@ class Node:
         self.shape_eta = None
     
     def info(self):
+        """
+        Returns a string representation of the node.
+        
+        Returns:
+        str: Node information including its coordinates
+        """
         return f"Node at ({self.x}, {self.y})"
 
-
 class Element:
+    """
+    Represents a finite element consisting of four nodes.
+    
+    Attributes:
+    nodes (list of Node): List of four nodes defining the element
+    c (float): Wave speed associated with the element
+    stiff (numpy.ndarray): Stiffness matrix of the element
+    mass (numpy.ndarray): Mass matrix of the element
+    """
     def __init__(self, node1, node2, node3, node4, wavespeed):
+        """
+        Initializes an Element object.
+        
+        Parameters:
+        node1, node2, node3, node4 (Node): Four nodes defining the element
+        wavespeed (float): Wave speed associated with the element
+        """
         self.nodes = [node1, node2, node3, node4]
         self.c = wavespeed
         self.stiff = np.zeros((4, 4))
@@ -33,17 +84,43 @@ class Element:
         self.stiff, self.mass = self.calculate_matrices()
 
     def set_isoparametric_coordinates(self):
+        """
+        Assigns isoparametric coordinates to the element's nodes.
+        """
         self.nodes[0].shape_xi, self.nodes[0].shape_eta = -1, -1  # Bottom-left
         self.nodes[1].shape_xi, self.nodes[1].shape_eta = 1, -1   # Bottom-right
         self.nodes[2].shape_xi, self.nodes[2].shape_eta = 1, 1    # Top-right
         self.nodes[3].shape_xi, self.nodes[3].shape_eta = -1, 1   # Top-left
 
     def shape_function_derivatives(self, xi, eta):
+        """
+        Computes the derivatives of the shape functions with respect to xi and eta.
+        
+        Parameters:
+        xi (float): Isoparametric coordinate in the xi direction
+        eta (float): Isoparametric coordinate in the eta direction
+        
+        Returns:
+        tuple: Two lists containing the derivatives with respect to xi and eta
+        """
         dN_dxi = [-(1 - eta) / 4, (1 - eta) / 4, (1 + eta) / 4, -(1 + eta) / 4]
         dN_deta = [-(1 - xi) / 4, -(1 + xi) / 4, (1 + xi) / 4, (1 - xi) / 4]
         return dN_dxi, dN_deta
 
     def jacobian(self, dN_dxi, dN_deta):
+        """
+        Computes the Jacobian matrix for the element.
+
+        Parameters:
+        dN_dxi (list of float): Partial derivatives of shape functions with respect to xi.
+        dN_deta (list of float): Partial derivatives of shape functions with respect to eta.
+
+        Returns:
+        tuple: 
+            - J (numpy.ndarray): 2x2 Jacobian matrix.
+            - detJ (float): Determinant of the Jacobian matrix.
+            - invJ (numpy.ndarray): Inverse of the Jacobian matrix.
+        """
         J = np.zeros((2, 2))
         for i, node in enumerate(self.nodes):
             J[0, 0] += dN_dxi[i] * node.x
@@ -53,6 +130,17 @@ class Element:
         return J, np.linalg.det(J), np.linalg.inv(J)
 
     def calculate_B_matrix(self, invJ, dN_dxi, dN_deta):
+        """
+        Computes the strain-displacement matrix (B-matrix) for the element.
+
+        Parameters:
+        invJ (numpy.ndarray): Inverse of the Jacobian matrix.
+        dN_dxi (list of float): Partial derivatives of shape functions with respect to xi.
+        dN_deta (list of float): Partial derivatives of shape functions with respect to eta.
+
+        Returns:
+        numpy.ndarray: 2x4 strain-displacement matrix (B-matrix).
+        """
         B = np.zeros((2, 4))
         for i in range(4):
             dN_dx = invJ[0, 0] * dN_dxi[i] + invJ[0, 1] * dN_deta[i]
@@ -62,6 +150,12 @@ class Element:
         return B
 
     def calculate_matrices(self):
+        """
+        Computes the stiffness and mass matrices for the element.
+        
+        Returns:
+        tuple: Stiffness matrix and mass matrix as numpy arrays
+        """
         K = np.zeros((4, 4))
         M = np.zeros((4, 4))
         gauss_points = [-1 / np.sqrt(3), 1 / np.sqrt(3)]
@@ -92,6 +186,21 @@ class Element:
         return K, M
 
 def create_mesh(domain_x, domain_y, num_elements_x, num_elements_y, wavespeed):
+    """
+    Creates a structured finite element mesh of quadrilateral elements.
+
+    Parameters:
+    domain_x (tuple of float): The x-axis boundaries of the domain (xmin, xmax).
+    domain_y (tuple of float): The y-axis boundaries of the domain (ymin, ymax).
+    num_elements_x (int): Number of elements along the x-axis.
+    num_elements_y (int): Number of elements along the y-axis.
+    wavespeed (float): Wave speed associated with the elements.
+
+    Returns:
+    tuple:
+        - nodes (list of Node): List of nodes in the mesh.
+        - elements (list of Element): List of elements in the mesh.
+    """
     x_positions = np.linspace(domain_x[0], domain_x[1], num_elements_x + 1)
     y_positions = np.linspace(domain_y[0], domain_y[1], num_elements_y + 1)
     nodes = [Node(x, y) for y in y_positions for x in x_positions]
@@ -109,12 +218,42 @@ def create_mesh(domain_x, domain_y, num_elements_x, num_elements_y, wavespeed):
     # Indicate Mesh creating is done
     print("\nMesh is created.")
     print(f"Total number of nodes is {len(nodes)}")
-    print(f"Total number of elements is {len(elements)}\n")
+    print(f"Total number of elements is {len(elements)}")
 
     return nodes, elements
 
 class System:
+    """
+    Represents the finite element system for wave propagation simulation.
+
+    Attributes:
+    domain_x (tuple of float): The x-axis boundaries of the domain (xmin, xmax).
+    domain_y (tuple of float): The y-axis boundaries of the domain (ymin, ymax).
+    num_elements_x (int): Number of elements along the x-axis.
+    num_elements_y (int): Number of elements along the y-axis.
+    nodes (list of Node): List of nodes in the mesh.
+    elements (list of Element): List of elements in the mesh.
+    num_nodes (int): Total number of nodes in the system.
+    global_stiffness (numpy.ndarray): Global stiffness matrix.
+    global_mass (numpy.ndarray): Global mass matrix.
+    u_solved (numpy.ndarray or None): Solution matrix containing displacement values.
+    left_boundary (list of Node): Nodes located on the left boundary.
+    right_boundary (list of Node): Nodes located on the right boundary.
+    top_boundary (list of Node): Nodes located on the top boundary.
+    bottom_boundary (list of Node): Nodes located on the bottom boundary.
+    """
     def __init__(self, domain_x=None, domain_y=None, num_elements_x=None, num_elements_y=None, wavespeed=None, filename=None):
+        """
+        Initializes the System class.
+
+        Parameters:
+        domain_x (tuple of float, optional): X-axis boundaries of the domain.
+        domain_y (tuple of float, optional): Y-axis boundaries of the domain.
+        num_elements_x (int, optional): Number of elements along the x-axis.
+        num_elements_y (int, optional): Number of elements along the y-axis.
+        wavespeed (float, optional): Wave speed associated with the elements.
+        filename (str, optional): File name to load a saved system configuration.
+        """
 
         # Initialize the class with the save file.
         if filename:  # If a filename is provided, load the system from file
@@ -137,6 +276,16 @@ class System:
             self.assemble_global_matrices()
 
     def identify_boundary_nodes(self):
+        """
+        Identifies the nodes located at the boundaries of the domain.
+
+        Returns:
+        tuple:
+            - left_boundary (list of Node): Nodes on the left boundary.
+            - right_boundary (list of Node): Nodes on the right boundary.
+            - top_boundary (list of Node): Nodes on the top boundary.
+            - bottom_boundary (list of Node): Nodes on the bottom boundary.
+        """
         left_boundary = []
         right_boundary = []
         top_boundary = []
@@ -155,6 +304,12 @@ class System:
         return left_boundary, right_boundary, top_boundary, bottom_boundary
     
     def get_middle_node(self):
+        """
+        Finds the node closest to the center of the domain.
+
+        Returns:
+        middle_node (Node): The middle node of the mesh.
+        """
         # Calculate the midpoint coordinates of the domain
         x_mid = (self.domain_x[0] + self.domain_x[1]) / 2
         y_mid = (self.domain_y[0] + self.domain_y[1]) / 2
@@ -169,9 +324,11 @@ class System:
     
     def get_info(self, detailed = False):
         """
-        Return the sizes of the mass, stiffness, and force matrices.
-        """
+        Prints information about the system matrices and optionally details about the middle node.
 
+        Parameters:
+        detailed (bool, optional): If True, prints additional details about the middle node.
+        """
         mass_size = self.global_mass.shape
         stiffness_size = self.global_stiffness.shape
         force_size = self.force_time_series.shape
@@ -192,6 +349,12 @@ class System:
             # We can add e.g. self bounday nodes or another infos
     
     def assemble_global_matrices(self):
+        """
+        Prints information about the system matrices and optionally details about the middle node.
+
+        Parameters:
+        detailed (bool, optional): If True, prints additional details about the middle node.
+        """
         for element in self.elements:
             local_stiffness = element.stiff
             local_mass = element.mass
@@ -205,6 +368,9 @@ class System:
                     self.global_mass[global_i, global_j] += local_mass[i, j]
 
     def apply_boundary_conditions(self):
+        """
+        Applies boundary conditions by modifying the global stiffness matrix and force vector.
+        """
         for i in range(self.num_nodes):
             if (self.nodes[i].x == self.domain_x[0] or self.nodes[i].x == self.domain_x[1] or 
                 self.nodes[i].y == self.domain_y[0] or self.nodes[i].y == self.domain_y[1]):
@@ -214,6 +380,13 @@ class System:
                 self.force_vector[i] = 0
                 
     def set_initial_conditions(self):
+        """
+        Sets the initial displacement conditions in the system using a Gaussian distribution.
+
+        The function initializes a displacement field centered at the middle of the domain.
+        It also computes the initial force vector by applying the global stiffness matrix 
+        to the displacement field.
+        """
         x0 = (self.domain_x[0] + self.domain_x[1]) / 2
         y0 = (self.domain_y[0] + self.domain_y[1]) / 2
         sigma = 0.25  
@@ -227,6 +400,14 @@ class System:
 
         
     def generateSineBurst(self, frequency, cycles = 3, amplitude = 1):
+        """
+        Generates a sine burst function to be used as a time-dependent force.
+
+        Parameters:
+        frequency (float): Frequency of the sine burst in Hz.
+        cycles (int, optional): Number of cycles in the burst. Default is 3.
+        amplitude (float, optional): Amplitude of the sine burst. Default is 1.
+        """
         omega = frequency * 2 * np.pi            
         return (
             lambda t: amplitude
@@ -236,6 +417,20 @@ class System:
             )  # normalization over the applied area
     
     def apply_sine_burst_force(self, total_time, time_steps, frequency=10, cycles=3, amplitude=1e3):
+        """
+        Applies a sine burst force to the system at the middle node over a defined time period.
+
+        Parameters:
+        total_time (float): Total duration of the simulation in seconds.
+        time_steps (int): Number of time steps in the simulation.
+        frequency (float, optional): Frequency of the sine burst in Hz. Default is 10.
+        cycles (int, optional): Number of cycles in the sine burst. Default is 3.
+        amplitude (float, optional): Amplitude of the applied force. Default is 1000.
+
+        Returns:
+        force_time_series (numpy.ndarray): A force-time series matrix of shape (num_nodes, time_steps) 
+                    containing the applied force at each node over time.
+        """
         # Create the sine burst function
         sine_burst = self.generateSineBurst(frequency, cycles, amplitude)
         
@@ -261,6 +456,18 @@ class System:
         return force_time_series
     
     def solve_time_domain(self, total_time, time_steps, save_filename = None):
+        """
+        Solves the wave propagation problem in the time domain using the finite difference method.
+
+        Parameters:
+        total_time (float): Total duration of the simulation in seconds.
+        time_steps (int): Number of time steps in the simulation.
+        save_filename (str, optional): If provided, saves the solved system to the specified file.
+
+        Returns:
+        u (numpy.ndarray): A displacement matrix of shape (num_nodes, time_steps) containing 
+                    the computed displacement values at each node over time.
+        """
         dt = total_time / time_steps
 
         # Displacement matrix initialized with zeroes for each time step
@@ -309,7 +516,15 @@ class System:
 
     # Transform time solution into freqeuncy solution
     def solve_frequency_domain(self, frequency=50):
-        
+        """
+        Solves the wave propagation problem in the frequency domain using the Fourier Transform.
+
+        Parameters:
+        frequency (int, optional): Number of frequency points to consider. Default is 50.
+
+        Returns:
+        u_f (numpy.ndarray): Displacement values in the frequency domain for each node.
+        """ 
         # Compute the FFT along the time axis
         u_sol_time2freq = fft2(self.u_solved, axes=(1,))
 
@@ -381,7 +596,10 @@ class System:
     # Function for saving the system variables after solving
     def save(self, filename):
         """
-        Save all relevant variables of the system to a file.
+        Saves the system state to a file.
+
+        Parameters:
+        filename (str): Name of the file to save the system state.
         """
         data = {
             'nodes': self.nodes,
@@ -410,7 +628,10 @@ class System:
     # Loading the saved data file
     def load(self, filename):
         """
-        Load the system from the saved file.
+        Loads a previously saved system state from a file.
+
+        Parameters:
+        filename (str): Name of the file containing the saved system state.
         """
         with open(filename, 'rb') as file:
             data = pickle.load(file)
@@ -436,7 +657,15 @@ class System:
 
     # Function to animate wave propagation over time
     def animate_wave_propagation_time(self, total_time, time_steps):
-        """ Set up the plot and animation for real-time updates """
+        """
+        Creates an animation of the wave propagation over time.
+
+        Parameters:
+        total_time (float): Total duration of the simulation in seconds.
+        time_steps (int): Number of time steps in the simulation.
+
+        The function visualizes the displacement field at each time step using a heatmap representation.
+        """
         fig, ax = plt.subplots(figsize=(8, 8))
         
         # Calculate the time step interval
