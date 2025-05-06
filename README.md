@@ -4,12 +4,14 @@ Modeling the scalar wave equation in both time and frequency domains — Softwar
 
 ## 🌀 Overview
 
-Wave simulation is widely used across many engineering fields such as biomedical applications and non-destructive testing. This project explores two computational methods to model wave propagation:
+Modelling the scalar wave equation in the time and frequency domain - Softwarelab 2024.
+
+Wave simulation is used in many fields of modern-day engineering, such as biomedical applications, non-destructive testing (NDT), and Noise, Vibration and Harshness (NVH) tests. Different computational methods are applied to model the wave propagation. In the frame of this project, the finite difference method (FDM) is studied first, and then the finite element method (FEM) is introduced.
 
 - **Finite Difference Method (FDM)** – Introduced first to model basic wave behavior.
 - **Finite Element Method (FEM)** – Applied subsequently for more complex geometries and boundary conditions.
 
-The simulation considers a **1D isotropic and homogeneous** material domain.
+The simulation considers a **Isotropic and homogeneous** material domain.
 
 > All code and related documentation developed as part of this group project can be found in this repository.
 
