@@ -1,19 +1,52 @@
-# scalar wave equation
+# Scalar Wave Equation Simulation
 
-Modelling the scalar wave equation in the time and frequency domain - Softwarelab 2024.
+Modeling the scalar wave equation in both time and frequency domains — Software Lab, 2024.
 
-Wave simulation is used in many fields of modern-day engineering, such as biomedical applications or non-destructive testing. Different computational methods are applied to model the wave propagation. In the frame of this project, the finite difference method (FDM) is studied first, and then the finite element method (FEM) is introduced. 
+## 🌀 Overview
 
-The material is assumed to be isotropic and homogeneous in the whole domain, starting in one dimension. All code written for this group project and its documentation can be found in this repository.
+Wave simulation is widely used across many engineering fields such as biomedical applications and non-destructive testing. This project explores two computational methods to model wave propagation:
 
-## Members
+- **Finite Difference Method (FDM)** – Introduced first to model basic wave behavior.
+- **Finite Element Method (FEM)** – Applied subsequently for more complex geometries and boundary conditions.
 
-- Fatemeh Seyfi
-- Laura Winter
-- Julius Weidinger
-- Tolga Gökalp
+The simulation considers a **1D isotropic and homogeneous** material domain.
 
-## Supervisor 
+> All code and related documentation developed as part of this group project can be found in this repository.
 
-Divya Singh
+## 🛠️ Technologies Used
+
+- Python (NumPy, Matplotlib, scipy)
+- Finite Difference Method (FDM)
+- Finite Element Method (FEM)
+- Object-Oriented Programming (System, Node, etc.)
+
+## 📁 Project Structure
+
+scalar-wave-equation/
+├── fdm/ # Finite Difference Method implementation
+├── fem/ # Finite Element Method implementation
+├── docs/ # Project documentation and reports
+├── images/ # Visualizations, graphs, and wave plots
+└── README.md
+
+## 👥 Team Members
+
+- Tolga Gökalp  
+- Fatemeh Seyfi  
+- Laura Winter  
+- Julius Weidinger  
+
+## 👩‍🏫 Supervisor
+
+- Divya Singh
+
+## 🖼️ Sample Visuals
+
+You can include some example output visuals here, e.g.:
+
+![Wave propagation (undamaged)](images/undamaged.gif)
+![Wave propagation (damaged)](images/damaged.gif)
+![Frequency domain (1D)](images/frequency_domain_1d.png)
+![Convergence](images/convergence.png)
+
 
