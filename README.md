@@ -24,11 +24,13 @@ The simulation considers a **Isotropic and homogeneous** material domain.
 
 ## 📁 Project Structure
 
+```
 scalar-wave-equation/
-├── fdm/ # Finite Difference Method implementation
-├── fem/ # Finite Element Method implementation
-├── images/ # Visualizations, graphs, and wave plots
+├── fdm/         # Finite Difference Method implementation
+├── fem/         # Finite Element Method implementation
+├── images/      # Visualizations, graphs, and wave plots
 └── README.md
+```
 
 ## 👥 Team Members
 
